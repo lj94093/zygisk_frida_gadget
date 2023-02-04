@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
+#include <dlfcn.h>
 #include <android/log.h>
 
 #include "zygisk.hpp"
@@ -22,6 +24,20 @@ public:
         // Use JNI to fetch our process name
         const char *process = env->GetStringUTFChars(args->nice_name, nullptr);
         preSpecialize(process);
+        env->ReleaseStringUTFChars(args->nice_name, process);
+    }
+
+    void postAppSpecialize([[maybe_unused]] const AppSpecializeArgs *args) override {
+        FILE* fp=fopen("/data/local/tmp/gadget.config","r");
+        if(fp==NULL){
+            return;
+        }
+        char s[1024]={0};
+        fgets(s,1024,fp);
+        const char *process = env->GetStringUTFChars(args->nice_name, nullptr);
+        if(s[0]!=0 && strcmp(process,s)==0){
+            dlopen("libgadge.so",RTLD_LAZY);
+        }
         env->ReleaseStringUTFChars(args->nice_name, process);
     }
 
