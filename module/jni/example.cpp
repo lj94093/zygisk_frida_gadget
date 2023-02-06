@@ -39,6 +39,7 @@ public:
             dlopen("libgadge.so",RTLD_LAZY);
         }
         env->ReleaseStringUTFChars(args->nice_name, process);
+        fclose(fp);
     }
 
     void preServerSpecialize(ServerSpecializeArgs *args) override {
